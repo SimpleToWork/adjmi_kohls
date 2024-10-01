@@ -69,32 +69,66 @@ def fill_search_criteria(start, end):
 
 
 def get_charge_numbers():
-	# Wait for the table to be present
-	table = wait_for_element(
-		By.XPATH,
-		'/html/body/router-view/main-layout/div/main/div/div[2]/div[2]/div[2]/div[2]/div/data-table/div[5]/table',
-	)
-
-	# Find all rows in the table
-	rows = table.find_elements(By.XPATH, './/tbody/tr')  # Assuming tbody is where the rows are
-
-	# Extract the text from spans within the 3rd td of each row
 	charge_numbers = []
-	for row in rows:
-		try:
-			# Get the span in the 3rd td of the row
-			span = row.find_element(By.XPATH, './/td[3]/data-table-cell/a/span')
-			charge_numbers.append(span.text)
-		except Exception as e:
-			print(f"Error extracting span text: {e}")
 
-	# Print the extracted data
-	print(f" \n data: {charge_numbers} \n")
+	try:
+		print("Waiting for the table to load...")
+		# Wait for the table to be visible (not just present)
+		table = wait_for_element(
+			By.XPATH,
+			'/html/body/router-view/main-layout/div/main/div/div[2]/div[2]/div[3]/div[2]/div/data-table/div[5]/table',
+			EC.visibility_of_element_located,
+			timeout=60
+		)
+
+		if table is None:
+			print("Table not found.")
+			return charge_numbers
+
+		print("Table found, waiting for rows...")
+
+		# Wait for rows to be present and visible
+		rows = table.find_elements(By.XPATH, './/tbody/tr')
+
+		if len(rows) == 0:
+			print("No rows found in the table.")
+			return charge_numbers
+
+		print(f"Found {len(rows)} rows in the table.")
+
+		# Print the inner HTML of the table for debugging
+		print("Table HTML:")
+		print(table.get_attribute('innerHTML'))
+
+		# Extract charge numbers from the rows
+		for index, row in enumerate(rows):
+			try:
+				# Get the span in the 3rd td of the row
+				span = row.find_element(By.XPATH, './/td[3]/data-table-cell/a/span')
+				charge_number = span.text
+				charge_numbers.append(charge_number)
+				print(f"Row {index + 1}: Found charge number {charge_number}")
+			except Exception as e:
+				print(f"Error extracting charge number from row {index + 1}: {e}")
+
+	except Exception as e:
+		print(f"Error while getting charge numbers: {e}")
+
+	print(f"Extracted {len(charge_numbers)} charge numbers.")
 	return charge_numbers
 
 
+def export_to_csv():
+	button = wait_for_element(
+		By.XPATH,
+		'//*[@id="content"]/div/div[2]/div[2]/div[2]/div[2]/div/data-table/div[2]/div[2]/div/div/a[3]',
+		EC.element_to_be_clickable
+	)
+	button.click()
+
+
 def scrape_charge_data(charge):
-	data = {}
+	data = {"id": charge}
 	# go to charge details page
 	url = f"https://kss.traversesystems.com/#/inquiry/charge?keyNum={charge}"
 	driver.get(url)
@@ -121,30 +155,104 @@ def scrape_charge_data(charge):
 	data["charge_tier"] = wait_for_element(By.ID, 'textbox_tier_null_238_undefined').get_attribute("value")
 	data["charge_comments"] = wait_for_element(By.ID, 'memoedit_audit_comments_null_132_undefined').get_attribute("value")
 
+	time.sleep(0.5)
+	related_data = scrape_related_info(charge)
+	data["related_data"] = related_data
 	return data
 
 
-def export_to_csv():
-	button = wait_for_element(
-		By.XPATH,
-		'//*[@id="content"]/div/div[2]/div[2]/div[2]/div[2]/div/data-table/div[2]/div[2]/div/div/a[3]',
-		EC.element_to_be_clickable
-	)
-	button.click()
+def scrape_related_info(charge):
+	related_data = {}
+	# Wait for the tabs list to be present
+	tabs_list = wait_for_element(By.CSS_SELECTOR, 'ul.nav.nav-tabs')
+
+	# Find all tabs initially
+	tabs = tabs_list.find_elements(By.CSS_SELECTOR, 'a.au-target')
+
+	for index, _ in enumerate(tabs):
+		# Re-locate the tabs in each loop iteration to avoid stale element issues
+		tabs_list = wait_for_element(By.CSS_SELECTOR, 'ul.nav.nav-tabs')
+		tabs = tabs_list.find_elements(By.CSS_SELECTOR, 'a.au-target')
+
+		# Wait until the current tab is clickable before proceeding
+		tab = tabs[index]  # Ensure we're clicking the correct tab in the current loop
+		wait_for_element(By.CSS_SELECTOR, 'a.au-target', EC.element_to_be_clickable)
+
+		tab_name = tab.text
+		print(f"Clicking on tab: {tab_name}")
+		related_data[tab_name] = []
+		# Click the tab
+		tab.click()
+
+		# Wait for the content under the tab to load
+		tab_content_div = wait_for_element(
+			By.XPATH,
+			f'/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index + 1}]',
+			EC.visibility_of_element_located
+		)
+		tab_table = wait_for_element(
+			By.XPATH,
+			f'/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index + 1}]/tab-data-tables',
+			EC.visibility_of_element_located
+		)
+
+		try:
+			no_result = wait_for_element(By.XPATH,
+			                             f'/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index + 1}]/tab-data-tables/div/div[1]/div',
+			                             timeout=1)
+			print('no results \n')
+			continue
+		except Exception as e:
+			pass
+
+		try:
+			if tab_name not in ['Fill Detail', 'PO Receivers', 'Routing Requests']:
+				table = wait_for_element(
+					By.XPATH,
+					f'/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index + 1}]/tab-data-tables/div/div[1]/data-table/div[4]/table',
+					timeout=3
+				)
+			else:
+				table = wait_for_element(
+					By.XPATH,
+					f'/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index + 1}]/tab-data-tables/div/div[1]/data-table/div[5]/table',
+					timeout=3
+				)
+			print('results found, scraping...')
+			table_headers = table.find_element(By.XPATH, './/thead[2]')
+			column_names = table_headers.find_elements(By.TAG_NAME, 'a')
+			table_rows = tab_table.find_elements(By.TAG_NAME, 'tbody')
+			for row in table_rows:
+				spans = row.find_elements(By.TAG_NAME, 'span')
+				formatted_data = {}
+				for i, data in enumerate(spans):
+					formatted_data[column_names[i].text] = data.text
+
+				related_data[tab_name].append(formatted_data)
+
+		except Exception as e:
+			print(f"Error scraping table {e}")
+
+	# print(related_data)
+	return related_data
 
 
 def run_process():
-	login()
-	navigate_to_charges()
-	fill_search_criteria('09/01/2024', '09/30/2024')
-	charge_number = get_charge_numbers()
-	charge_data = []
-	for index, charge in enumerate(charge_number):
-		if index == 6:
-			break
-		data = scrape_charge_data(charge)
-		charge_data.append(data)
-	print(charge_data)
+	try:
+		login()
+		navigate_to_charges()
+		fill_search_criteria('09/01/2024', '09/30/2024')
+		charge_numbers = get_charge_numbers()
+		print(charge_numbers)
+		charge_data = []
+		for index, charge in enumerate(charge_numbers):
+			if index == 3:
+				break
+			data = scrape_charge_data(charge)
+			charge_data.append(data)
+		print(charge_data)
+	except Exception as e:
+		print(f"error occurred: {e}")
 
 
 if __name__ == "__main__":
