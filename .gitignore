@@ -7,6 +7,7 @@ build/
 develop-eggs/
 dist/
 downloads/
+combined_files/
 eggs/
 .eggs/
 lib/
