@@ -40,8 +40,19 @@ service = Service(ChromeDriverManager().install())
 # Create the Chrome driver instance using the Service object
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
-# Navigate to kohls login page
-driver.get("https://kss.traversesystems.com/#/login")
+
+# def setup_driver(directory):
+# 	chrome_options = Options()
+# 	chrome_options.add_experimental_option("prefs", {
+# 		"download.default_directory": directory,
+# 		"download.prompt_for_download": False,
+# 		"download.directory_upgrade": True,
+# 		"safebrowsing.enabled": True
+# 	})
+# 	service = Service(ChromeDriverManager().install())
+# 	driver = webdriver.Chrome(service=service, options=chrome_options)
+# 	return driver
+
 
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -62,6 +73,9 @@ def set_download_directory(new_directory):
 
 # fill login inputs and submit
 def login():
+	# Navigate to kohls login page
+	driver.get("https://kss.traversesystems.com/#/login")
+
 	username_input = wait_for_element(By.ID, "username")
 	username_input.send_keys("Kohlscompliance@adjmi-apparel.com")
 
@@ -301,7 +315,7 @@ def run_process():
 
 			for index, charge in enumerate(charge_numbers):
 				# condition and break used for testing on smaller scale
-				if index == 10:
+				if index == 3:
 					break
 				# run function to scrape charge and related data on each charge extracted from charges CSV
 				scrape_charge_data(charge)
