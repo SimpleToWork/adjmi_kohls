@@ -2,8 +2,17 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base, Charge, AuditIssue, AuditTrouble, Document, Email, FillDetail, PoReceiver, Report, RoutingRequest1, RoutingRequest2
-from main import setup_database
 import code
+
+
+def setup_database():
+	connection_string = "mysql+mysqlconnector://root:Simple123@localhost/adjmi_kohls"
+	engine = create_engine(connection_string, echo=True)
+	Base.metadata.create_all(engine)
+	Session = sessionmaker(bind=engine)
+	session = Session()
+	return engine, session
+
 
 engine, session = setup_database()
 
@@ -25,6 +34,14 @@ def drop_all_data():
 
 def query_all(table):
 	return session.query(table).all()
+
+
+def query_by(table, field, value):
+	column = getattr(table, field, None)
+	if column is None:
+		raise AttributeError(f"{table.__name__} has no column '{field}'")
+
+	return session.query(table).filter(column == value).all()
 
 
 # running this script (python db_shell.py) creates a python shell with the proper imports to interact with the DB
