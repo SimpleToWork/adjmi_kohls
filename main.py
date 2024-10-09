@@ -88,7 +88,6 @@ def store_csv_data(session, combined_dir):
 
 			for field in datetime_fields:
 				if field in row_data:
-					print(f"DATEFIELD:  {field}")
 					row_data[field] = convert_to_datetime(row_data[field])
 
 			# Clean empty or null values

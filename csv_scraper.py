@@ -299,6 +299,14 @@ def combine_csvs(parent_directory, combined_directory):
 				combined_file_path = os.path.join(subfolder_combined_path, f"{subdir}_combined_{timestamp}.csv")
 				combined_df.to_csv(combined_file_path, index=False)
 				print(f"Combined CSV saved to {combined_file_path}")
+
+				for file in os.listdir(subfolder_path):
+					file_to_delete = os.path.join(subfolder_path, file)
+					try:
+						os.remove(file_to_delete)
+						print(f"Deleted file: {file_to_delete}")
+					except Exception as e:
+						print(f"Error deleting file '{file_to_delete}': {e}")
 			else:
 				print(f"No CSV files found in '{subfolder_path}', skipping combination")
 
