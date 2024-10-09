@@ -45,4 +45,8 @@ def query_by(table, field, value):
 
 
 # running this script (python db_shell.py) creates a python shell with the proper imports to interact with the DB
-code.interact(local=locals())
+try:
+	code.interact(local=locals())
+finally:
+	session.close()
+	print("Session closed.")
