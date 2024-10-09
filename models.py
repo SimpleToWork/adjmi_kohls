@@ -44,6 +44,7 @@ class Charge(Base):
 	reports = relationship("Report", back_populates="charge")
 	routing_requests_1 = relationship("RoutingRequest1", back_populates="charge")
 	routing_requests_2 = relationship("RoutingRequest2", back_populates="charge")
+	disputes = relationship("Dispute", back_populates="charge")
 
 	def __repr__(self):
 		return f"<Charge(id={self.id})>"
@@ -266,3 +267,23 @@ class RoutingRequest2(Base):
 	charge_number = Column(Integer, ForeignKey('charge.id'))
 
 	charge = relationship("Charge", back_populates='routing_requests_2')
+
+
+class Dispute(Base):
+	__tablename__ = 'dispute'
+
+	id = Column(Integer, primary_key=True, autoincrement=True)
+	dispute_number = Column(Integer, nullable=True)
+	create_date = Column(Date, nullable=True)
+	resolve_date = Column(Date, nullable=True)
+	associate = Column(String(100), nullable=True)
+	resolution = Column(String(255), nullable=True)
+	resolution_comments = Column(String(255), nullable=True)
+	contact = Column(String(255), nullable=True)
+	package_assoc = Column(String(250), nullable=True)
+	reversal_reason = Column(String(255), nullable=True)
+	reversal_amount = Column(Float, nullable=True)
+	reversal_transmitted = Column(DateTime, nullable=True)
+	charge_number = Column(Integer, ForeignKey('charge.id'))
+
+	charge = relationship("Charge", back_populates='disputes')

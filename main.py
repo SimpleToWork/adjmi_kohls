@@ -3,7 +3,7 @@ import re
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Base, Charge, AuditIssue, AuditTrouble, Document, Email, FillDetail, PoReceiver, Report, RoutingRequest1, RoutingRequest2
+from models import Base, Charge, AuditIssue, AuditTrouble, Document, Email, FillDetail, PoReceiver, Report, RoutingRequest1, RoutingRequest2, Dispute
 from csv_scraper import (
 	run_process,
 	driver,
@@ -22,7 +22,8 @@ model_map = {
 	"PO Receivers": PoReceiver,
 	"Reports": Report,
 	"Routing Requests_11": RoutingRequest1,
-	"Routing Requests_12": RoutingRequest2
+	"Routing Requests_12": RoutingRequest2,
+	"Disputes": Dispute
 }
 
 # map date fields to parse later
@@ -32,7 +33,8 @@ date_fields = {
 	"Emails": ["queued_date", "generated_date"],
 	"PO Receivers": ["receive_date", "start_ship", "stop_ship"],
 	"Reports": ["created"],
-	"Routing Requests_11": ["hdr_routing_request_dt", "hdr_ready_for_pickup_dt", "hdr_stop_pickup_dt", "hdr_start_delivery_dt", "hdr_stop_delivery_dt", "hdr_appt_dt", "hdr_complete_ts", "hdr_update_ts", "hdr_request_granted_dt", "hdr_cms_create_ts", "hdr_cms_analysis_ts", "release_dt", "ship_start_dt", "routing_request_dt", "ship_stop_dt", "late_ship_dt", "dispatched_dt", "tendered_dt", "accepted_dt", "en_route_dt", "final_destination_dt", "cancelled_dt", "cms_update_ts", "cms_create_ts", "ready_for_pickup_dt", "start_delivery_dt", "stop_delivery_dt", "appt_dt", "request_granted_dt", "early_available_dt", ""]
+	"Routing Requests_11": ["hdr_routing_request_dt", "hdr_ready_for_pickup_dt", "hdr_stop_pickup_dt", "hdr_start_delivery_dt", "hdr_stop_delivery_dt", "hdr_appt_dt", "hdr_complete_ts", "hdr_update_ts", "hdr_request_granted_dt", "hdr_cms_create_ts", "hdr_cms_analysis_ts", "release_dt", "ship_start_dt", "routing_request_dt", "ship_stop_dt", "late_ship_dt", "dispatched_dt", "tendered_dt", "accepted_dt", "en_route_dt", "final_destination_dt", "cancelled_dt", "cms_update_ts", "cms_create_ts", "ready_for_pickup_dt", "start_delivery_dt", "stop_delivery_dt", "appt_dt", "request_granted_dt", "early_available_dt"],
+	"Disputes": ["create_date", "resolve_date", "reversal_transmitted"]
 }
 
 

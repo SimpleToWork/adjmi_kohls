@@ -315,7 +315,7 @@ def run_process():
 
 			for index, charge in enumerate(charge_numbers):
 				# condition and break used for testing on smaller scale
-				if index == 2:
+				if index == 18:
 					break
 				# run function to scrape charge and related data on each charge extracted from charges CSV
 				scrape_charge_data(charge)
