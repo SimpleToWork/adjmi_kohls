@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
@@ -57,7 +57,7 @@ class AuditTrouble(Base):
 	audit_number = Column(Integer, nullable=True)
 	trouble_number = Column(Integer, nullable=True)
 	description = Column(String(255), nullable=True)
-	entry_date = Column(DateTime, nullable=True)
+	entry_date = Column(Date, nullable=True)
 	comments = Column(String(255), nullable=True)
 	charge_number = Column(Integer, ForeignKey('charge.id'))
 
@@ -128,7 +128,7 @@ class FillDetail(Base):
 	id = Column(Integer, primary_key=True, autoincrement=True)
 	style = Column(Integer, nullable=True)
 	sku = Column(Integer, nullable=True)
-	upc = Column(Integer, nullable=True)
+	upc = Column(String(120), nullable=True)
 	units_ordered = Column(Integer, nullable=True)
 	units_received = Column(Integer, nullable=True)
 	units_over_short = Column(Integer, nullable=True)
@@ -142,8 +142,8 @@ class PoReceiver(Base):
 	__tablename__ = 'po_receiver'
 
 	id = Column(Integer, primary_key=True, autoincrement=True)
-	receiver_number = Column(Integer, nullable=True)
-	receive_date = Column(DateTime, nullable=True)
+	receiver_number = Column(String(120), nullable=True)
+	receive_date = Column(Date, nullable=True)
 	cartons = Column(Integer, nullable=True)
 	units = Column(Integer, nullable=True)
 	cost = Column(Float, nullable=True)
@@ -153,8 +153,8 @@ class PoReceiver(Base):
 	po_cost = Column(Float, nullable=True)
 	po_retail = Column(Float, nullable=True)
 	department = Column(Integer, nullable=True)
-	start_ship = Column(DateTime, nullable=True)
-	stop_ship = Column(DateTime, nullable=True)
+	start_ship = Column(Date, nullable=True)
+	stop_ship = Column(Date, nullable=True)
 	vendor = Column(String(250), nullable=True)
 	vendor_num = Column(Integer, nullable=True)
 	charge_number = Column(Integer, ForeignKey('charge.id'))
@@ -184,6 +184,7 @@ class RoutingRequest1(Base):
 	hdr_weight = Column(Float, nullable=True)
 	hdr_routing_request_dt = Column(DateTime, nullable=True)
 	hdr_ready_for_pickup_dt = Column(DateTime, nullable=True)
+	hdr_start_pickup_dt = Column(DateTime, nullable=True)
 	hdr_stop_pickup_dt = Column(DateTime, nullable=True)
 	hdr_start_delivery_dt = Column(DateTime, nullable=True)
 	hdr_stop_delivery_dt = Column(DateTime, nullable=True)

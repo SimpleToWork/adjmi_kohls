@@ -248,6 +248,7 @@ def export_related_csvs(charge, retries=3):
 				if latest_csv_file:
 					# rename the file to contain the tab name and the charge number
 					new_filename = os.path.join(tab_directory, f"{tab_name.replace('/', '_')}_{charge}.csv")
+					time.sleep(0.5)
 					shutil.move(latest_csv_file, new_filename)
 					print(f"		- File downloaded and renamed to: {new_filename.split('/')[-1]}\n")
 				else:
@@ -315,7 +316,7 @@ def run_process():
 
 			for index, charge in enumerate(charge_numbers):
 				# condition and break used for testing on smaller scale
-				if index == 3:
+				if index == 2:
 					break
 				# run function to scrape charge and related data on each charge extracted from charges CSV
 				scrape_charge_data(charge)
