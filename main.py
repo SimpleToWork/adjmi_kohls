@@ -1,6 +1,5 @@
 import os
 import re
-
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -12,7 +11,7 @@ from csv_scraper import (
 )
 from datetime import datetime
 
-
+# map subdirectory names to models to dynamically create instances of the correct class
 model_map = {
 	"charge_files": Charge,
 	"Audit _ Trouble Data": AuditTrouble,
@@ -26,6 +25,7 @@ model_map = {
 	"Routing Requests_12": RoutingRequest2
 }
 
+# map date fields to parse later
 date_fields = {
 	"charge_files": ["transmitted"],
 	"Audit _ Trouble Data": ["entry_date"],
@@ -45,6 +45,7 @@ def setup_database():
 	return engine, session
 
 
+# normalize column names in CSVs so that they match up with field names in models (field names mimic column names)
 def normalize_column_name(column_name):
 	# Replace any non-alphanumeric character (including spaces) with an underscore
 	column_name = re.sub(r"[^a-zA-Z0-9]", "_", column_name)
@@ -54,13 +55,16 @@ def normalize_column_name(column_name):
 	return column_name.lower().strip("_")  # Strip leading or trailing underscores if any
 
 
+# convert CSV dates to valid format for fields with Date or Datetime types
 def convert_to_datetime(value, date_format="%m/%d/%Y %I:%M:%S %p"):
 	if pd.isnull(value) or not isinstance(value, str):
 		return None
 	try:
+		# try converting value to Datetime (will work if value contains time)
 		return datetime.strptime(value, date_format)
 	except ValueError:
 		try:
+			# then try converting  value to Date (if value does not contain time)
 			date_only_format = "%m/%d/%Y"
 			return datetime.strptime(value, date_only_format)
 		except ValueError:
@@ -68,24 +72,33 @@ def convert_to_datetime(value, date_format="%m/%d/%Y %I:%M:%S %p"):
 			return None
 
 
+# stores data from combined_files in database (mostly dynamic)
 def store_csv_data(session, combined_dir):
+	# use map of subdirectories to models
 	for subdir, model in model_map.items():
+		# find the combined file created on the latest scrape run (uses timestamp from scrape run)
 		csv_path = os.path.join(combined_dir, subdir, f"{subdir}_combined_{timestamp}.csv")
+		# skip empty directories
 		if not os.path.exists(csv_path):
 			print(f"No CSV file found for {subdir} at {csv_path}, skipping.")
 			continue
 
 		df = pd.read_csv(csv_path)
-		# normalized_df = df.rename(columns=lambda x: normalize_column_name(x))
+
+		# normalize column names to match up with Model field names
 		df.columns = [normalize_column_name(col) for col in df.columns]
+		# charge files need their charge number column renamed to id to map to Charges primary key field
 		if subdir == "charge_files" and "charge_number" in df.columns:
 			df.rename(columns={"charge_number": "id"}, inplace=True)
 
+		# get the date fields for the current subdir/model for processing
 		datetime_fields = date_fields.get(subdir, [])
 
+		# iterate through the rows of the combined file's data frame (each row represents a record)
 		for index, row in df.iterrows():
 			row_data = row.to_dict()
 
+			# parse date values to valid Date/Datetime types using mapped date fields when necessary
 			for field in datetime_fields:
 				if field in row_data:
 					row_data[field] = convert_to_datetime(row_data[field])
@@ -95,23 +108,32 @@ def store_csv_data(session, combined_dir):
 				if pd.isnull(value) or (isinstance(value, str) and value.strip() == ''):
 					row_data[key] = None  # or set to some default value, like ''
 
+			# since DB fields mimic normalized column headers we can just pass the row in using kwargs
+			# this dynamically creates records of any type
 			record = model(**row_data)
+			# add the new record to the session
 			session.add(record)
-
+	# commit all added records to the DB
 	session.commit()
 
 
+# runs entire scraping, processing, and storing process
 def main():
 	engine, session = setup_database()
 
 	try:
+		# run webscraper
 		run_process()
 		combined_dir = os.path.join(os.getcwd(), "combined_files")
+		# process and store scraped CSV data in DB
 		store_csv_data(session, combined_dir)
 	except Exception as e:
 		print(f"An error occurred: {e}")
 	finally:
+		# close the driver
 		driver.quit()
+		# end the DB session
+		session.close()
 
 
 if __name__ == "__main__":

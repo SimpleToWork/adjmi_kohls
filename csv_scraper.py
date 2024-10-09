@@ -10,12 +10,12 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import (
 	NoSuchElementException,
-    TimeoutException,
-    WebDriverException,
-    ElementClickInterceptedException,
-    StaleElementReferenceException,
-    ElementNotInteractableException,
-    InvalidSelectorException
+	TimeoutException,
+	WebDriverException,
+	ElementClickInterceptedException,
+	StaleElementReferenceException,
+	ElementNotInteractableException,
+	InvalidSelectorException
 )
 import time
 import os
@@ -39,20 +39,6 @@ service = Service(ChromeDriverManager().install())
 
 # Create the Chrome driver instance using the Service object
 driver = webdriver.Chrome(service=service, options=chrome_options)
-
-
-# def setup_driver(directory):
-# 	chrome_options = Options()
-# 	chrome_options.add_experimental_option("prefs", {
-# 		"download.default_directory": directory,
-# 		"download.prompt_for_download": False,
-# 		"download.directory_upgrade": True,
-# 		"safebrowsing.enabled": True
-# 	})
-# 	service = Service(ChromeDriverManager().install())
-# 	driver = webdriver.Chrome(service=service, options=chrome_options)
-# 	return driver
-
 
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -139,7 +125,8 @@ def wait_for_file(download_directory, timeout=30):
 		files = os.listdir(download_directory)
 		csv_files = [f for f in files if f.endswith('.csv')]
 		if csv_files:
-			latest_csv_files = os.path.join(download_directory, max(csv_files, key=lambda f: os.path.getmtime(os.path.join(download_directory, f))))
+			latest_csv_files = os.path.join(download_directory, max(csv_files, key=lambda f: os.path.getmtime(
+				os.path.join(download_directory, f))))
 			if os.path.isfile(latest_csv_files) and os.path.getsize(latest_csv_files) > 0:
 				return latest_csv_files
 		time.sleep(1)
@@ -187,7 +174,7 @@ def export_related_csvs(charge, retries=3):
 				tab_name = tab.text.strip()
 				# there are two tabs called 'Routing Requests' with different data
 				if tab_name == 'Routing Requests':
-					tab_name = f"{tab_name}_{index+1}"
+					tab_name = f"{tab_name}_{index + 1}"
 				print(f"	[{index + 1}/{total_tabs}] Clicking on tab: '{tab_name}'")
 
 				# click tab -- Retry mechanism to avoid stale element or timing issues
@@ -206,7 +193,8 @@ def export_related_csvs(charge, retries=3):
 				# check if tab contains "No Results" element and skip tab if so
 				try:
 					# uses full XPath for element to avoid error with Kohls' show/hide DOM structure
-					no_results_alert = driver.find_element(By.XPATH, f"/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index+1}]/tab-data-tables/div/div[1]/div")
+					no_results_alert = driver.find_element(By.XPATH,
+					                                       f"/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index + 1}]/tab-data-tables/div/div[1]/div")
 					if "No Results" in no_results_alert.text:
 						print(f"		- No data found in tab '{tab_name}', skipping export")
 						continue  # Skip to the next tab
@@ -228,9 +216,9 @@ def export_related_csvs(charge, retries=3):
 						# uses full XPath for element to avoid error with Kohls' show/hide DOM structure
 						export_button = wait_for_element(
 							By.XPATH,
-							f'/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index+1}]/tab-data-tables/div/div[1]/data-table/div[2]/div[2]/div/div/a[3]',
+							f'/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index + 1}]/tab-data-tables/div/div[1]/data-table/div[2]/div[2]/div/div/a[3]',
 							EC.element_to_be_clickable,
-							timeout=10
+							timeout=5
 						)
 						export_button.click()
 						print(f"		- Export button clicked for tab: '{tab_name}'")
@@ -239,7 +227,8 @@ def export_related_csvs(charge, retries=3):
 					except (TimeoutException, NoSuchElementException, StaleElementReferenceException) as e:
 						if attempt == retries - 1:
 							raise e  # Re-raise after final attempt
-						print(f"		- Retry locating export button in tab '{tab_name}' (attempt {attempt + 1}/{retries})")
+						print(
+							f"		- Retry locating export button in tab '{tab_name}' (attempt {attempt + 1}/{retries})")
 						time.sleep(0.5)
 
 				# Wait for the file to be downloaded
@@ -254,7 +243,8 @@ def export_related_csvs(charge, retries=3):
 				else:
 					print(f"		- No CSV file found for tab: '{tab_name}' for charge: '{charge}'\n")
 
-			except (TimeoutException, NoSuchElementException, StaleElementReferenceException, WebDriverException) as tab_error:
+			except (
+			TimeoutException, NoSuchElementException, StaleElementReferenceException, WebDriverException) as tab_error:
 				print(f"		! Error: {tab_error} while processing tab '{tab_name}' for charge '{charge}'")
 				continue
 
@@ -300,6 +290,7 @@ def combine_csvs(parent_directory, combined_directory):
 				combined_df.to_csv(combined_file_path, index=False)
 				print(f"Combined CSV saved to {combined_file_path}")
 
+				# clear source files (downloads) after combining successfully to avoid combining the same data in future runs
 				for file in os.listdir(subfolder_path):
 					file_to_delete = os.path.join(subfolder_path, file)
 					try:
@@ -341,7 +332,6 @@ def run_process():
 if __name__ == "__main__":
 	try:
 		run_process()
-		# combine_csvs(os.path.join(os.getcwd(), "Routing Requests_12"))
 		input("Press enter to close...")
 	except Exception as e:
 		print(f"an error occurred: {e}")
