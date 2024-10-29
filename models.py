@@ -59,7 +59,7 @@ class AuditTrouble(Base):
 	trouble_number = Column(Integer, nullable=True)
 	description = Column(String(255), nullable=True)
 	entry_date = Column(Date, nullable=True)
-	comments = Column(String(255), nullable=True)
+	comments = Column(String(525), nullable=True)
 	charge_number = Column(Integer, ForeignKey('charge.id'))
 
 	charge = relationship("Charge", back_populates="audit_troubles")
@@ -76,7 +76,7 @@ class AuditIssue(Base):
 	units = Column(String(100), nullable=True)
 	cartons = Column(Float, nullable=True)
 	gs1128 = Column(String(100), nullable=True)
-	comments = Column(String(255), nullable=True)
+	comments = Column(String(525), nullable=True)
 	sku = Column(String(100), nullable=True)
 	charge_number = Column(Integer, ForeignKey('charge.id'))
 
@@ -127,7 +127,7 @@ class FillDetail(Base):
 	__tablename__ = "fill_detail"
 
 	id = Column(Integer, primary_key=True, autoincrement=True)
-	style = Column(Integer, nullable=True)
+	style = Column(String(150), nullable=True)
 	sku = Column(Integer, nullable=True)
 	upc = Column(String(120), nullable=True)
 	units_ordered = Column(Integer, nullable=True)
@@ -278,7 +278,7 @@ class Dispute(Base):
 	resolve_date = Column(Date, nullable=True)
 	associate = Column(String(100), nullable=True)
 	resolution = Column(String(255), nullable=True)
-	resolution_comments = Column(String(255), nullable=True)
+	resolution_comments = Column(String(525), nullable=True)
 	contact = Column(String(255), nullable=True)
 	package_assoc = Column(String(250), nullable=True)
 	reversal_reason = Column(String(255), nullable=True)

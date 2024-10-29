@@ -66,7 +66,7 @@ def login():
 	username_input.send_keys("Kohlscompliance@adjmi-apparel.com")
 
 	password_input = wait_for_element(By.ID, "password")
-	password_input.send_keys("Miracleyvon24*")
+	password_input.send_keys("Miracleoct28*")
 
 	login_button = wait_for_element(By.CSS_SELECTOR, 'a.btn.btn-primary.btn-block.btn-lg', EC.element_to_be_clickable)
 	login_button.click()
@@ -315,7 +315,7 @@ def run_process():
 
 			for index, charge in enumerate(charge_numbers):
 				# condition and break used for testing on smaller scale
-				if index == 18:
+				if index == 6:
 					break
 				# run function to scrape charge and related data on each charge extracted from charges CSV
 				scrape_charge_data(charge)
