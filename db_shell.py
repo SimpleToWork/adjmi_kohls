@@ -1,13 +1,27 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Base, Charge, AuditIssue, AuditTrouble, Document, Email, FillDetail, PoReceiver, Report, RoutingRequest1, RoutingRequest2, Dispute
+from models import (
+	Base,
+	Calendar,
+	Charge,
+	AuditIssue,
+	AuditTrouble,
+	Document,
+	Email,
+	FillDetail,
+	PoReceiver,
+	Report,
+	RoutingRequest1,
+	RoutingRequest2,
+	Dispute
+)
 import code
 
 
 def setup_database():
 	connection_string = "mysql+mysqlconnector://root:Simple123@localhost/adjmi_kohls"
-	engine = create_engine(connection_string, echo=True)
+	engine = create_engine(connection_string, echo=False)
 	Base.metadata.create_all(engine)
 	Session = sessionmaker(bind=engine)
 	session = Session()

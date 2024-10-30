@@ -158,7 +158,7 @@ def scrape_charge_data(charge):
 def export_related_csvs(charge, retries=3):
 	try:
 		# Wait for the tabs list to be present
-		tabs_list = wait_for_element(By.CSS_SELECTOR, 'ul.nav.nav-tabs')
+		tabs_list = wait_for_element(By.XPATH, '/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/ul')
 		tabs = tabs_list.find_elements(By.CSS_SELECTOR, 'a.au-target')
 		total_tabs = len(tabs)
 
@@ -315,7 +315,7 @@ def run_process():
 
 			for index, charge in enumerate(charge_numbers):
 				# condition and break used for testing on smaller scale
-				if index == 6:
+				if index == 3:
 					break
 				# run function to scrape charge and related data on each charge extracted from charges CSV
 				scrape_charge_data(charge)

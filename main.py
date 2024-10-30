@@ -3,7 +3,21 @@ import re
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Base, Charge, AuditIssue, AuditTrouble, Document, Email, FillDetail, PoReceiver, Report, RoutingRequest1, RoutingRequest2, Dispute
+from models import (
+	Base,
+	Calendar,
+	Charge,
+	AuditIssue,
+	AuditTrouble,
+	Document,
+	Email,
+	FillDetail,
+	PoReceiver,
+	Report,
+	RoutingRequest1,
+	RoutingRequest2,
+	Dispute
+)
 from csv_scraper import (
 	run_process,
 	driver,
@@ -40,7 +54,7 @@ date_fields = {
 
 def setup_database():
 	connection_string = "mysql+mysqlconnector://root:Simple123@localhost/adjmi_kohls"
-	engine = create_engine(connection_string, echo=True)
+	engine = create_engine(connection_string, echo=False)
 	Base.metadata.create_all(engine)
 	Session = sessionmaker(bind=engine)
 	session = Session()
@@ -110,11 +124,22 @@ def store_csv_data(session, combined_dir):
 				if pd.isnull(value) or (isinstance(value, str) and value.strip() == ''):
 					row_data[key] = None  # or set to some default value, like ''
 
-			# since DB fields mimic normalized column headers we can just pass the row in using kwargs
-			# this dynamically creates records of any type
-			record = model(**row_data)
-			# add the new record to the session
-			session.add(record)
+			if subdir == "charge_files":
+				existing_charge = session.query(Charge).filter_by(id=row_data['id']).first()
+				if existing_charge:
+					for key, value in row_data.items():
+						setattr(existing_charge, key, value)
+					print(f"Updated existing charge with ID {row_data['id']}")
+				else:
+					record = model(**row_data)
+					session.add(record)
+					print(f"Added new charge with ID {row_data['id']}")
+			else:
+				# since DB fields mimic normalized column headers we can just pass the row in using kwargs
+				# this dynamically creates records of any type
+				record = model(**row_data)
+				# add the new record to the session
+				session.add(record)
 	# commit all added records to the DB
 	session.commit()
 
@@ -128,7 +153,9 @@ def main():
 		run_process()
 		combined_dir = os.path.join(os.getcwd(), "combined_files")
 		# process and store scraped CSV data in DB
+		print(f"\n Importing Combined CSV Data to DB...\n")
 		store_csv_data(session, combined_dir)
+		print("Done.")
 	except Exception as e:
 		print(f"An error occurred: {e}")
 	finally:

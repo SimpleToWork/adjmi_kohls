@@ -1,9 +1,25 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Date
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Date, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 
 Base = declarative_base()
+
+
+class Calendar(Base):
+	__tablename__ = 'calendar'
+
+	id = Column(Integer, primary_key=True, autoincrement=True)
+	year = Column(Integer, nullable=False)
+	month = Column(Integer, nullable=False)
+	start_date = Column(Date, nullable=False)
+	end_date = Column(Date, nullable=False)
+	pulled = Column(Boolean, default=False, nullable=False)
+
+	charges = relationship("Charge", back_populates='calendar')
+
+	def __repr__(self):
+		return f"<Calendar(start_date={self.start_date}, end_date={self.end_date}, pulled={self.pulled})>"
 
 
 class Charge(Base):
@@ -34,6 +50,9 @@ class Charge(Base):
 	po_asn_count = Column(Integer, nullable=True)
 	parent_company = Column(String(150), nullable=True)
 	created_at = Column(DateTime(timezone=True), server_default=func.now())
+	calendar_id = Column(Integer, ForeignKey('calendar.id'))
+
+	calendar = relationship("Calendar", back_populates='charges')  # Charges belongs to Calendar Instance
 
 	audit_troubles = relationship("AuditTrouble", back_populates="charge")
 	audit_issues = relationship("AuditIssue", back_populates="charge")
