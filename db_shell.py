@@ -17,6 +17,7 @@ from models import (
 	Dispute
 )
 import code
+from datetime import datetime, timedelta
 
 
 def setup_database():
@@ -34,8 +35,9 @@ engine, session = setup_database()
 def drop_all_data():
 	try:
 		for table in reversed(Base.metadata.sorted_tables):
-			session.execute(table.delete())
-			print(f"Dropped all data from {table.name}")
+			if table.name != 'calendar':
+				session.execute(table.delete())
+				print(f"Dropped all data from {table.name}")
 
 		session.commit()
 		print("All data dropped successfully from all tables")
@@ -56,6 +58,22 @@ def query_by(table, field, value):
 		raise AttributeError(f"{table.__name__} has no column '{field}'")
 
 	return session.query(table).filter(column == value).all()
+
+
+def new_calendar(year, month, pulled=False):
+	start_date = datetime(year, month, 1)
+	end_date = (start_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+	calendar = Calendar(
+		year=year,
+		month=month,
+		start_date=start_date,
+		end_date=end_date,
+		pulled=pulled
+	)
+	session.add(calendar)
+	session.commit()
+	print(f"Added new Calendar instance: {calendar}")
 
 
 # running this script (python db_shell.py) creates a python shell with the proper imports to interact with the DB
