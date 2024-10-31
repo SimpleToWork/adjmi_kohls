@@ -20,7 +20,6 @@ from models import (
 )
 from csv_scraper import (
 	run_process,
-	driver,
 	timestamp
 )
 from datetime import datetime

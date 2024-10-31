@@ -391,12 +391,3 @@ def run_process(driver):
 	except Exception as e:
 		print(f"error occurred: {e}")
 
-
-# if __name__ == "__main__":
-# 	try:
-# 		run_process()
-# 		input("Press enter to close...")
-# 	except Exception as e:
-# 		print(f"an error occurred: {e}")
-# 	finally:
-# 		driver.quit()
