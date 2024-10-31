@@ -15,11 +15,12 @@ class Calendar(Base):
 	start_date = Column(Date, nullable=False)
 	end_date = Column(Date, nullable=False)
 	pulled = Column(Boolean, default=False, nullable=False)
+	imported = Column(Boolean, default=False, nullable=False)
 
 	charges = relationship("Charge", back_populates='calendar')
 
 	def __repr__(self):
-		return f"<Calendar(start_date={self.start_date}, end_date={self.end_date}, pulled={self.pulled})>"
+		return f"<Calendar(month={self.month}-{self.year}, pulled={self.pulled}, imported={self.imported})>"
 
 
 class Charge(Base):
@@ -50,6 +51,8 @@ class Charge(Base):
 	po_asn_count = Column(Integer, nullable=True)
 	parent_company = Column(String(150), nullable=True)
 	created_at = Column(DateTime(timezone=True), server_default=func.now())
+	pulled = Column(Boolean, default=False, nullable=False)
+	imported = Column(Boolean, default=False, nullable=False)
 	calendar_id = Column(Integer, ForeignKey('calendar.id'))
 
 	calendar = relationship("Calendar", back_populates='charges')  # Charges belongs to Calendar Instance
@@ -66,7 +69,7 @@ class Charge(Base):
 	disputes = relationship("Dispute", back_populates="charge")
 
 	def __repr__(self):
-		return f"<Charge(id={self.id})>"
+		return f"<Charge(id={self.id}, pulled={self.pulled}, imported={self.imported})>"
 
 
 class AuditTrouble(Base):
