@@ -9,8 +9,8 @@ from main import setup_database, normalize_column_name, convert_to_datetime
 
 
 def get_unimported_calendars(session):
-	print(f"\nGetting unpulled months...")
-	calendars = session.query(Calendar).filter_by(imported=False).all()
+	print(f"\nGetting unimported months...")
+	calendars = session.query(Calendar).filter_by(pulled=True, imported=False).all()
 	if len(calendars) > 0:
 		print(f"Found {len(calendars)} unimported months: {calendars}")
 	else:
