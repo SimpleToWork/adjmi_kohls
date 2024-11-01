@@ -6,6 +6,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from get_charges import get_charges_process
 from import_charges import import_charges_process
+from get_related_data import get_related_data_process
 from csv_scraper import downloads_dir
 from models import Base
 
@@ -41,3 +42,5 @@ if __name__ == '__main__':
 
 	get_charges_process(session, driver)
 	import_charges_process(session)
+	get_related_data_process(session, driver)
+
