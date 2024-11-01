@@ -66,15 +66,21 @@ def process_file_data(session, calendar, file, days):
 					print(f"Updating Charge {existing_charge.id} - Reason: transmitted in past {days} days...")
 					session.delete(existing_charge)
 					new_charge = Charge(**row_data)
+					new_charge.pulled = False
+					new_charge.imported = False
 					session.add(new_charge)
 				elif data_changed:
 					print(f"Updating Charge {existing_charge.id} - Reason: data changed...")
 					session.delete(existing_charge)
 					new_charge = Charge(**row_data)
+					new_charge.pulled = False
+					new_charge.imported = False
 					session.add(new_charge)
 			else:
 				print(f"Adding new Charge {row_data['id']}...")
 				new_charge = Charge(**row_data)
+				new_charge.pulled = False
+				new_charge.imported = False
 				session.add(new_charge)  # Add new charge to the session
 
 		session.commit()
