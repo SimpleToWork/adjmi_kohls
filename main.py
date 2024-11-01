@@ -26,7 +26,6 @@ from datetime import datetime
 
 # map subdirectory names to models to dynamically create instances of the correct class
 model_map = {
-	"charge_files": Charge,
 	"Audit _ Trouble Data": AuditTrouble,
 	"Audit Issue Data": AuditIssue,
 	"Docs & Pics": Document,
@@ -41,7 +40,6 @@ model_map = {
 
 # map date fields to parse later
 date_fields = {
-	"charge_files": ["transmitted"],
 	"Audit _ Trouble Data": ["entry_date"],
 	"Emails": ["queued_date", "generated_date"],
 	"PO Receivers": ["receive_date", "start_ship", "stop_ship"],
