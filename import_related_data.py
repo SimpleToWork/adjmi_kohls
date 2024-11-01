@@ -1,16 +1,6 @@
 import pandas as pd
 from models import (
-	Charge,
-	AuditTrouble,
-	AuditIssue,
-	Dispute,
-	Document,
-	Email,
-	FillDetail,
-	PoReceiver,
-	Report,
-	RoutingRequest1,
-	RoutingRequest2
+	Charge
 )
 import os
 from main import normalize_column_name, convert_to_datetime, setup_database, model_map, date_fields

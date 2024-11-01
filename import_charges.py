@@ -1,8 +1,6 @@
-from models import Base, Calendar, Charge
+from models import Calendar, Charge
 import pandas as pd
 from datetime import datetime, timedelta
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import os
 from csv_scraper import downloads_dir
 from main import setup_database, normalize_column_name, convert_to_datetime

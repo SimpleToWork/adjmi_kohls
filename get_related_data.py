@@ -1,5 +1,3 @@
-import time
-
 from csv_scraper import scrape_charge_data, setup_driver, login
 from models import Charge
 from main import setup_database

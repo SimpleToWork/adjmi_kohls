@@ -40,9 +40,14 @@ def setup_driver():
 if __name__ == '__main__':
 	engine, session = setup_database()
 	driver = setup_driver()
+	try:
 
-	get_charges_process(session, driver)
-	import_charges_process(session)
-	get_related_data_process(session, driver)
-	import_related_data_process(session)
-
+		get_charges_process(session, driver)
+		import_charges_process(session)
+		get_related_data_process(session, driver)
+		import_related_data_process(session)
+	except Exception as e:
+		pass
+	finally:
+		driver.quit()
+		session.close()

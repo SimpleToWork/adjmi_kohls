@@ -3,7 +3,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
@@ -12,14 +11,11 @@ from selenium.common.exceptions import (
 	NoSuchElementException,
 	TimeoutException,
 	WebDriverException,
-	ElementClickInterceptedException,
 	StaleElementReferenceException,
 	ElementNotInteractableException,
-	InvalidSelectorException
 )
 import time
 import os
-import shutil
 from datetime import datetime
 import re
 
@@ -27,19 +23,6 @@ import re
 downloads_dir = os.path.join(os.getcwd(), "downloads")
 # Directory where combined CSV files will be saved -- will contain sub-folders representing each tab
 combined_dir = os.path.join(os.getcwd(), "combined_files")
-
-# chrome_options = Options()
-# chrome_options.add_experimental_option("prefs", {
-# 	"download.default_directory": downloads_dir,
-# 	"download.prompt_for_download": False,
-# 	"download.directory_upgrade": True,
-# 	"safebrowsing.enabled": True
-# })
-# # Set up ChromeDriver using the Service class
-# service = Service(ChromeDriverManager().install())
-#
-# # Create the Chrome driver instance using the Service object
-# driver = webdriver.Chrome(service=service, options=chrome_options)
 
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -52,10 +35,8 @@ def setup_driver():
 		"download.directory_upgrade": True,
 		"safebrowsing.enabled": True
 	})
-	# Set up ChromeDriver using the Service class
 	setup_service = Service(ChromeDriverManager().install())
 
-	# Create the Chrome driver instance using the Service object
 	web_driver = webdriver.Chrome(service=setup_service, options=options)
 	return web_driver
 
@@ -369,30 +350,4 @@ def combine_csvs(parent_directory, combined_directory):
 			else:
 				print(f"No CSV files found in '{subfolder_path}', skipping combination")
 
-
-# run full scripting process using above functions
-def run_process(driver):
-	try:
-		login(driver)
-		navigate_to_charges(driver)
-		fill_search_criteria(driver, '09/01/2024', '09/30/2024')
-		export_charges_csv(driver)
-		latest_csv_file = wait_for_file(os.path.join(downloads_dir, "charge_files"))
-		if latest_csv_file:
-			charge_numbers = extract_charges_from_csv(latest_csv_file)
-
-			for index, charge in enumerate(charge_numbers):
-				# condition and break used for testing on smaller scale
-				if index == 3:
-					break
-				# run function to scrape charge and related data on each charge extracted from charges CSV
-				scrape_charge_data(driver, charge)
-
-			print("Scraping done, combining CSVs for each tab...\n")
-			# after scraping process is done, combine all individual CSVs into one for each subdirectory within 'downloads'
-			combine_csvs(downloads_dir, combined_dir)
-		else:
-			print('CSV file not found within the specified timeout')
-	except Exception as e:
-		print(f"error occurred: {e}")
 
