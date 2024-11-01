@@ -88,6 +88,8 @@ def login(driver):
 	login_button = wait_for_element(driver, By.CSS_SELECTOR, 'a.btn.btn-primary.btn-block.btn-lg', EC.element_to_be_clickable)
 	login_button.click()
 
+	WebDriverWait(driver, 10).until(EC.url_contains(f"home"))
+
 
 # clicks 'Vendor Tools' menu, then clicks 'Find Charges'
 def navigate_to_charges(driver):
@@ -300,8 +302,11 @@ def export_related_csvs(driver, charge, retries=3):
 				if latest_csv_file:
 					# rename the file to contain the tab name and the charge number
 					new_filename = os.path.join(tab_directory, f"{tab_name.replace('/', '_')}_{charge}.csv")
-					time.sleep(0.5)
-					shutil.move(latest_csv_file, new_filename)
+
+					if os.path.exists(new_filename):
+						os.remove(new_filename)
+
+					os.rename(latest_csv_file, new_filename)
 					print(f"		- File downloaded and renamed to: {new_filename.split('/')[-1]}\n")
 				else:
 					print(f"		- No CSV file found for tab: '{tab_name}' for charge: '{charge}'\n")
