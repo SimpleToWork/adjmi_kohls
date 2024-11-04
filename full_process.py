@@ -38,16 +38,22 @@ def setup_driver():
 
 
 if __name__ == '__main__':
+	# Start DB session
 	engine, session = setup_database()
+	# Start web driver
 	driver = setup_driver()
 	try:
-
+		# Scrape Charges
 		get_charges_process(session, driver)
+		# Import Scraped Charges to DB
 		import_charges_process(session)
+		# Scrape Related Data tabs
 		get_related_data_process(session, driver)
+		# Import scraped Related Data
 		import_related_data_process(session)
 	except Exception as e:
 		pass
 	finally:
+		# Close the web driver and DB session
 		driver.quit()
 		session.close()

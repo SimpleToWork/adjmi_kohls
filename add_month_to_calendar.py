@@ -16,19 +16,24 @@ def setup_database():
 engine, session = setup_database()
 
 
+# Adds current month to Calendar table
 def current_month_to_calendar():
+	# Get current day, month, year
 	today = datetime.today()
 	year = today.year
 	month = today.month
 
+	# Check if current month, year already exists in Calendar table, if so, do not add it
 	existing_entry = session.query(Calendar).filter_by(year=year, month=month).first()
 	if existing_entry:
 		print(f"Calendar instance for current month ({month}-{year}) already exists")
 		return
 
+	# Calculate first and last day of current month
 	start_date = datetime(year, month, 1)
 	end_date = (start_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
+	# Create new Calendar instance (pulled and imported boolean fields default to False)
 	new_calendar = Calendar(
 		year=year,
 		month=month,
