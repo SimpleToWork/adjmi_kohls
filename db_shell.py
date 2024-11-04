@@ -76,7 +76,7 @@ def new_calendar(year, month, pulled=False):
 	print(f"Added new Calendar instance: {calendar}")
 
 
-# running this script (python db_shell.py) creates a python shell with the proper imports to interact with the DB
+# running this script (python db_shell.py) creates a python shell with the proper imports/methods to interact with the DB
 try:
 	code.interact(local=locals())
 finally:
