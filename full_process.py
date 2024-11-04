@@ -37,10 +37,11 @@ def setup_driver():
 	return web_driver
 
 
+# When this file is executed, it runs all the combined processes for scraping and importing
 if __name__ == '__main__':
-	# Start DB session
+	# Start DB session to be passed through to all steps
 	engine, session = setup_database()
-	# Start web driver
+	# Start web driver to be passed through to all scraping steps
 	driver = setup_driver()
 	try:
 		# Scrape Charges
