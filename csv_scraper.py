@@ -196,7 +196,7 @@ def scrape_charge_data(driver, charge):
 	# wait until URL contains the param before continuing
 	WebDriverWait(driver, 10).until(EC.url_contains(f"keyNum={charge}"))
 	# run function to click on and extract related tabs for current charge
-	export_related_csvs(driver, charge)
+	return export_related_csvs(driver, charge)
 
 
 # click on tabs within a charge and extract the data as CSV
@@ -296,9 +296,10 @@ def export_related_csvs(driver, charge, retries=3):
 			TimeoutException, NoSuchElementException, StaleElementReferenceException, WebDriverException) as tab_error:
 				print(f"		! Error: {tab_error} while processing tab '{tab_name}' for charge '{charge}'")
 				continue
-
+		return True
 	except Exception as general_error:
 		print(f"Error initiating export for charge '{charge}': {general_error}")
+		return False
 
 
 # combine CSVs file in each subdirectory within 'downloads' into one CSV for each tab and store them in 'combined_files'

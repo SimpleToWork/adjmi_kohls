@@ -21,12 +21,14 @@ def get_related_data_process(session, driver):
 		print(f"\n{len(charges)} Charges to Scrape")
 		for index, charge in enumerate(charges):
 			print(f"\n[{index+1}/{len(charges)}] Scraping data for Charge {charge.id}...")
-			scrape_charge_data(driver, charge.id)
-
-			print(f"Data scraped, marking Charge {charge.id} pulled...")
-			charge.pulled = True
-			session.commit()
-			print(f"Done: {charge}")
+			successful_pull = scrape_charge_data(driver, charge.id)
+			if successful_pull:
+				print(f"Data scraped, marking Charge {charge.id} pulled...")
+				charge.pulled = True
+				session.commit()
+				print(f"Done: {charge}")
+			else:
+				print(f"Data incomplete, Charge {charge.id} not marked as pulled.")
 	except Exception as e:
 		print(f"\nError occurred while getting related data: {e}")
 
@@ -46,11 +48,14 @@ if __name__ == '__main__':
 		print(f"\n{len(charges)} Charges to Scrape")
 		for index, charge in enumerate(charges):
 			print(f"\n[{index+1}/{len(charges)}] Scraping data for Charge {charge.id}...")
-			scrape_charge_data(driver, charge.id)
-			print(f"Data scraped, marking Charge {charge.id} pulled...")
-			charge.pulled = True
-			session.commit()
-			print(f"Done: {charge}")
+			successful_pull = scrape_charge_data(driver, charge.id)
+			if successful_pull:
+				print(f"Data scraped, marking Charge {charge.id} pulled...")
+				charge.pulled = True
+				session.commit()
+				print(f"Done: {charge}")
+			else:
+				print(f"Data incomplete, Charge {charge.id} not marked as pulled.")
 	except Exception as e:
 		print(f"\nError occurred while getting related data: {e}")
 
