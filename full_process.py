@@ -53,7 +53,8 @@ if __name__ == '__main__':
 		# Import scraped Related Data
 		import_related_data_process(session)
 	except Exception as e:
-		pass
+		# Most errors are handled within each process
+		print(f"Error occurred while running full process: {e}")
 	finally:
 		# Close the web driver and DB session
 		driver.quit()
