@@ -3,7 +3,7 @@
 pip install virtualenv
 
 cd /d "C:\Users\%USERNAME%\Desktop\New Projects\Adjmi Apparel\adjmi_kohls"
-python -m virtualenv venv
+python3.12 -m virtualenv venv
 
 cd venv/scripts
 call activate.bat
