@@ -76,6 +76,28 @@ def new_calendar(year, month, pulled=False):
 	print(f"Added new Calendar instance: {calendar}")
 
 
+def all_false(model, field):
+	try:
+		print(f"Marking all {model}s as un{field}...")
+		items = query_by(model, field, True)
+		print(f"Found {len(items)} where {field} is True")
+		for i in items:
+			setattr(i, field, False)
+
+		session.commit()
+		print(f"All {model}s marked as un{field}.")
+	except Exception as e:
+		print(f"Error: {e}")
+
+def check_all_data():
+	models = [Calendar, Charge, AuditIssue, AuditTrouble, Email, Dispute, FillDetail, Document, RoutingRequest1, RoutingRequest2, Report, PoReceiver]
+	for model in models:
+		all_data = session.query(model).all()
+		print(f"{model} has {len(all_data)} items")
+
+
+
+
 # running this script (python db_shell.py) creates a python shell with the proper imports/methods to interact with the DB
 try:
 	code.interact(local=locals())

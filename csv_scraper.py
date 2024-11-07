@@ -90,10 +90,17 @@ def navigate_to_charges(driver):
 	search_container = wait_for_element(driver, By.XPATH, '/html/body/router-view/main-layout/div/main/div/div[2]/div[2]/control-container/div/div')
 	try:
 		# Grab the element containing the collapse/expand icon
-		collapse_icon = search_container.find_element(By.XPATH, '/html/body/router-view/main-layout/div/main/div/div[2]/div[2]/control-container/div/ul/li/a/i')
+		collapse_icon = wait_for_element(driver, By.XPATH, '/html/body/router-view/main-layout/div/main/div/div[2]/div[2]/control-container/div/ul/li/a/i', timeout=10)
 		# If the icon element contains the 'caret-down' attribute that means the inputs are collapsed and need to be expanded
 		if "fa-caret-down" in collapse_icon.get_attribute("class"):
 			# Click the icon, expanding the inputs for the next step (filling search criteria)
+			wait_for_element(
+				driver,
+				By.XPATH,
+				'/html/body/router-view/main-layout/div/main/div/div[2]/div[2]/control-container/div/ul/li/a/i',
+				EC.element_to_be_clickable,
+				10
+			)
 			collapse_icon.click()
 	except Exception as e:
 		print(f"Error with collapse icon: {e}")
@@ -123,23 +130,33 @@ def fill_search_criteria(driver, start, end):
 
 # export charges as CSV
 def export_charges_csv(driver, calendar):
-	# Wait for and grab the 'Export to CSV' button
-	button = wait_for_element(
-		driver,
-		By.XPATH,
-		'/html/body/router-view/main-layout/div/main/div/div[2]/div[2]/div[3]/div[2]/div/data-table/div[2]/div[2]/div/div/a[3]',
-		EC.element_to_be_clickable
-	)
-	# locate/create subdirectory within 'downloads' to store charges CSV
-	charge_directory = os.path.join(downloads_dir, "charge_files")
-	if not os.path.exists(charge_directory):
-		os.makedirs(charge_directory)
+	try:
+		no_results = wait_for_element(driver, By.XPATH, "/html/body/router-view/main-layout/div/main/div/div[2]/div[2]/div[3]/div[2]/div/html/body/router-view/main-layout/div/main/div/div[2]/div[2]/div[3]/div[2]/div", timeout=2)
+		if no_results:
+			print(f"No results for {calendar.month}-{calendar.year}, skipping...")
+			return False
+	except Exception as e:
+		pass
+	try:
+		# Wait for and grab the 'Export to CSV' button
+		button = wait_for_element(
+			driver,
+			By.XPATH,
+			'/html/body/router-view/main-layout/div/main/div/div[2]/div[2]/div[3]/div[2]/div/data-table/div[2]/div[2]/div/div/a[3]',
+			EC.element_to_be_clickable
+		)
+		# locate/create subdirectory within 'downloads' to store charges CSV
+		charge_directory = os.path.join(downloads_dir, "charge_files")
+		if not os.path.exists(charge_directory):
+			os.makedirs(charge_directory)
 
-	# change driver's download directory to charge_directory before clicking button (downloads/charge_files)
-	set_download_directory(driver, charge_directory)
+		# change driver's download directory to charge_directory before clicking button (downloads/charge_files)
+		set_download_directory(driver, charge_directory)
 
-	# click the 'export to csv' button that will download the CSV
-	button.click()
+		# click the 'export to csv' button that will download the CSV
+		button.click()
+	except Exception as e:
+		return False
 
 	# wait for the file to download
 	downloaded_file = wait_for_file(charge_directory,timeout=15)
@@ -156,8 +173,10 @@ def export_charges_csv(driver, calendar):
 		# Rename the downloaded file
 		os.rename(downloaded_file, new_filename)
 		print(f"File renamed to: {new_filename}")
+		return True
 	else:
 		print(f"Download failed or file not found")
+		return False
 
 
 # wait to confirm file was downloaded to ensure interactions with files can continue

@@ -79,12 +79,12 @@ def get_charges_process(session, driver):
 
 			print("Clicking Export to CSV button...")
 			# Export the resulting Charges to CSV
-			export_charges_csv(driver, month)
-			print("CSV saved and renamed.")
-
-			print(f"Marking {month.month}-{month.year} as pulled...")
-			# Mark the Calendar instance as pulled
-			mark_calendar_pulled(session, month)
+			successful_export = export_charges_csv(driver, month)
+			if successful_export:
+				print("CSV saved and renamed.")
+				print(f"Marking {month.month}-{month.year} as pulled...")
+				# Mark the Calendar instance as pulled
+				mark_calendar_pulled(session, month)
 	except Exception as e:
 		print(f"\nError while getting charges data: {e}")
 
