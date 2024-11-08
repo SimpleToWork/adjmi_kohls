@@ -1,6 +1,6 @@
 import re
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from models import (
 	Base,
@@ -43,9 +43,20 @@ date_fields = {
 
 
 def setup_database():
+	# Initial connection string without specifying a database
+	connection_string_base = "mysql+mysqlconnector://root:Simple123@localhost"
+	engine_base = create_engine(connection_string_base, echo=False)
+	with engine_base.connect() as connection:
+		# Check if the database exists
+		db_exists = connection.execute(text("SHOW DATABASES LIKE 'adjmi_kohls'")).fetchone()
+		# Create the database if it doesn't exist
+		if not db_exists:
+			connection.execute(text("CREATE DATABASE adjmi_kohls"))
+
+	# Now connect specifically to the adjmi_kohls database
 	connection_string = "mysql+mysqlconnector://root:Simple123@localhost/adjmi_kohls"
 	engine = create_engine(connection_string, echo=False)
-	Base.metadata.create_all(engine)
+	Base.metadata.create_all(engine)  # This creates tables if they don't exist
 	Session = sessionmaker(bind=engine)
 	session = Session()
 	return engine, session
