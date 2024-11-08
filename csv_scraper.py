@@ -203,6 +203,11 @@ def wait_for_file(download_directory, timeout=60):
 			latest_file = max(files, key=lambda f: os.path.getmtime(os.path.join(download_directory, f)))
 			latest_file_path = os.path.join(download_directory, latest_file)
 
+			if latest_file.endswith('.crdownload'):
+				print(f"	- Waiting for download to complete: {latest_file}")
+				time.sleep(1)
+				continue  # Continue loop if the file is not fully downloaded
+
 			# Ensure the file size is stable, indicating the download is complete
 			initial_size = os.path.getsize(latest_file_path)
 			time.sleep(1)
