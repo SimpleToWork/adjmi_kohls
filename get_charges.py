@@ -94,7 +94,7 @@ if __name__ == '__main__':
 	try:
 		# When running as a stand-alone module, need to set up its own web driver and DB session instances
 		engine, session = setup_database()
-		enable_past_calendars(session, 3)
+		enable_past_calendars(session, 2)
 
 		months_to_search = get_unpulled_calendars(session)
 
