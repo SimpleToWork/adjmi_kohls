@@ -18,9 +18,11 @@ import time
 import os
 from datetime import datetime
 import re
+import getpass
 
 # Directory where exported CSVs will be saved -- will contain sub-folders representing each tab
-downloads_dir = os.path.join(os.getcwd(), "downloads")
+# downloads_dir = os.path.join(os.getcwd(), "downloads")
+downloads_dir = f'C:\\Users\\{getpass.getuser()}\\Dropbox\\Adjmi Apparel\\Kohls Program\\downloads'
 # Directory where combined CSV files will be saved -- will contain sub-folders representing each tab
 combined_dir = os.path.join(os.getcwd(), "combined_files")
 
@@ -66,7 +68,7 @@ def login(driver):
 
 	# Fill password input
 	password_input = wait_for_element(driver, By.ID, "password")
-	password_input.send_keys("Miracleoct28*")
+	password_input.send_keys("November24*")
 
 	# Click login button
 	login_button = wait_for_element(driver, By.CSS_SELECTOR, 'a.btn.btn-primary.btn-block.btn-lg', EC.element_to_be_clickable)

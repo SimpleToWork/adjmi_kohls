@@ -1,6 +1,13 @@
-from csv_scraper import scrape_charge_data, setup_driver, login
-from models import Charge
-from main import setup_database
+import os
+import sys
+
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
+from data_recruit.csv_scraper import scrape_charge_data, setup_driver, login
+from data_import.models import Charge
+from data_import.main import setup_database
 
 
 # Get all Charges marked as 'unpulled'

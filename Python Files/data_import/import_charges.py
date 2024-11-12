@@ -1,9 +1,16 @@
-from models import Calendar, Charge
+import os
+import sys
+
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
+from data_import.models import Calendar, Charge
 import pandas as pd
 from datetime import datetime, timedelta
 import os
-from csv_scraper import downloads_dir
-from main import setup_database, normalize_column_name, convert_to_datetime
+from data_recruit.csv_scraper import downloads_dir
+from data_import.main import setup_database, normalize_column_name, convert_to_datetime
 
 
 # Get all Calendars that were pulled and need to be imported

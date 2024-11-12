@@ -1,23 +1,30 @@
+import os
+import sys
+
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Base, Calendar
+from data_import.models import Base, Calendar
 from datetime import datetime, timedelta
 
 
-def setup_database():
-    connection_string = "mysql+mysqlconnector://root:Simple123@localhost/adjmi_kohls"
-    engine = create_engine(connection_string, echo=False)
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    return engine, session
-
-
-engine, session = setup_database()
+# def setup_database():
+#     connection_string = "mysql+mysqlconnector://root:Simple123@localhost/adjmi_kohls"
+#     engine = create_engine(connection_string, echo=False)
+#     Base.metadata.create_all(engine)
+#     Session = sessionmaker(bind=engine)
+#     session = Session()
+#     return engine, session
+#
+#
+# engine, session = setup_database()
 
 
 # Adds current month to Calendar table
-def current_month_to_calendar():
+def current_month_to_calendar(session):
     # Get current day, month, year
     today = datetime.today()
     year = today.year
@@ -45,7 +52,7 @@ def current_month_to_calendar():
     print(f"Added current month ({month}-{year}) to Calendar: {new_calendar}")
 
 
-def add_past_n_years(years):
+def add_past_n_years(years, session):
     today = datetime.today()
     current_year = today.year
     current_month = today.month
@@ -89,12 +96,15 @@ def add_past_n_years(years):
     print(f"\nPast {years} years added to Calendar.")
 
 
-if __name__ == '__main__':
+def run_calendar_method(session):
     try:
         print("Attempting to add current month to Calendar...")
-        add_past_n_years(2)
-        current_month_to_calendar()
+        add_past_n_years(2, session)
+        current_month_to_calendar(session)
     except Exception as e:
         print(f"Error Occurred while trying to add to Calendar: {e}")
     finally:
         session.close()
+
+# if __name__ == '__main__':
+#     run_calendar_method()

@@ -1,8 +1,16 @@
+import os
+import sys
+
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
+
 import re
 import pandas as pd
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from models import (
+from data_import.models import (
 	Base,
 	AuditIssue,
 	AuditTrouble,

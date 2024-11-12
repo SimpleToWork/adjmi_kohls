@@ -1,8 +1,15 @@
-from models import Calendar
+import os
+import sys
+
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
+from data_import.models import Calendar
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from csv_scraper import setup_driver, login, navigate_to_charges, fill_search_criteria, export_charges_csv
-from main import setup_database
+from data_recruit.csv_scraper import setup_driver, login, navigate_to_charges, fill_search_criteria, export_charges_csv
+from data_import.main import setup_database
 
 
 # Enables past calendars to be pulled and imported. takes in Int that represent the amount of months back to enable
@@ -50,14 +57,18 @@ def mark_calendar_pulled(session, month):
 		print(f"An error occurred while trying to marked month as pulled: {e}")
 
 
+def run_calender_process(session):
+	enable_past_calendars(session, 3)
+	# get all unpulled Calendars
+	months_to_search = get_unpulled_calendars(session)
+
+	return months_to_search
+
 # Function with process to get charges to be used in full_process.py. Takes in a DB session and web driver
 def get_charges_process(session, driver):
 	try:
 		# enable Calendars
-		enable_past_calendars(session, 3)
-
-		# get all unpulled Calendars
-		months_to_search = get_unpulled_calendars(session)
+		months_to_search = run_calender_process(session)
 
 		# Navigate and Log in to Kohls portal
 		print("\nLogging in...")

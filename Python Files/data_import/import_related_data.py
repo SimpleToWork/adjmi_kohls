@@ -1,10 +1,17 @@
+import os
+import sys
+
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
 import pandas as pd
-from models import (
+from data_import.models import (
 	Charge
 )
-import os
-from main import normalize_column_name, convert_to_datetime, setup_database, model_map, date_fields
-from csv_scraper import downloads_dir
+
+from data_import.main import normalize_column_name, convert_to_datetime, setup_database, model_map, date_fields
+from data_recruit.csv_scraper import downloads_dir
 
 
 # Get all Charges that were pulled and need to be imported
