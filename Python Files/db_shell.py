@@ -1,6 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import (
+import os
+import sys
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+from data_import.models import (
 	Base,
 	Calendar,
 	Charge,
@@ -13,7 +18,8 @@ from models import (
 	Report,
 	RoutingRequest1,
 	RoutingRequest2,
-	Dispute
+	Dispute,
+	Attachment
 )
 import code
 from datetime import datetime, timedelta
@@ -89,7 +95,7 @@ def all_false(model, field):
 		print(f"Error: {e}")
 
 def check_all_data():
-	models = [Calendar, Charge, AuditIssue, AuditTrouble, Email, Dispute, FillDetail, Document, RoutingRequest1, RoutingRequest2, Report, PoReceiver]
+	models = [Calendar, Charge, AuditIssue, AuditTrouble, Email, Dispute, FillDetail, Document, RoutingRequest1, RoutingRequest2, Report, PoReceiver, Attachment]
 	for model in models:
 		all_data = session.query(model).all()
 		print(f"{model} has {len(all_data)} items")

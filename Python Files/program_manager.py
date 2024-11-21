@@ -4,13 +4,14 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from data_recruit.get_charges import get_charges_process
+from data_recruitment.get_charges import get_charges_process
 from data_import.import_charges import import_charges_process
-from data_recruit.get_related_data import get_related_data_process
+from data_recruitment.get_related_data import get_related_data_process
 from data_import.import_related_data import import_related_data_process
+from data_recruitment.get_attachments import get_attachments_process
 from calendar_setup.add_month_to_calendar import run_calendar_method
-from data_recruit.csv_scraper import downloads_dir
-from data_import.models import Base
+from data_recruitment.csv_scraper import downloads_dir
+from models import Base
 
 
 def sql_create_engine(username, password, server, database):
@@ -80,6 +81,8 @@ if __name__ == '__main__':
 		get_related_data_process(session, driver)
 		# Import scraped Related Data
 		import_related_data_process(session)
+		# scrape and download attachments and relate to corresponding Related Data
+		get_attachments_process(session, driver)
 	except Exception as e:
 		# Most errors are handled within each process
 		print(f"Error occurred while running full process: {e}")

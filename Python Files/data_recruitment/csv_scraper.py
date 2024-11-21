@@ -19,6 +19,7 @@ import os
 from datetime import datetime
 import re
 import getpass
+import base64
 
 # Directory where exported CSVs will be saved -- will contain sub-folders representing each tab
 # downloads_dir = os.path.join(os.getcwd(), "downloads")
@@ -229,7 +230,7 @@ def extract_charges_from_csv(file):
 
 
 # navigates to charge page using URL params and run the scraping process on that Charge page
-def scrape_charge_data(driver, charge):
+def scrape_charge_data(driver, session, charge, Attachment):
 	# place charge number in URL param
 	url = f"https://kss.traversesystems.com/#/inquiry/charge?keyNum={charge}"
 	# navigate to URL
@@ -238,11 +239,11 @@ def scrape_charge_data(driver, charge):
 	# wait until URL contains the param before continuing
 	WebDriverWait(driver, 10).until(EC.url_contains(f"keyNum={charge}"))
 	# run function to click on and extract related tabs for current charge and return its result (True/False)
-	return export_related_csvs(driver, charge)
+	return export_related_csvs(driver, session, charge, Attachment)
 
 
 # click on tabs within a charge and extract the data as CSV
-def export_related_csvs(driver, charge, retries=2):
+def export_related_csvs(driver, session, charge, Attachment, retries=2):
 	try:
 		# Wait for the tabs list containing the related data to be present
 		tabs_list = wait_for_element(driver, By.XPATH, '/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/ul')
@@ -286,12 +287,17 @@ def export_related_csvs(driver, charge, retries=2):
 				try:
 					# uses full XPath for element to avoid error with Kohls' show/hide DOM structure
 					no_results_alert = driver.find_element(By.XPATH,
-					                                       f"/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index + 1}]/tab-data-tables/div/div[1]/div")
+					                                       f"/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index + 1}]/tab-data-tables/div/div[2]/div")
 					if "No Results" in no_results_alert.text:
 						print(f"		- No data found in tab '{tab_name}', skipping export")
 						continue  # Skip to the next tab
 				except NoSuchElementException:
 					pass  # Proceed if "No Results" alert is not found (meaning there is data present)
+
+				# scrape file links - only these tabs in the array contain file links
+				if tab_name in ['Docs & Pics', 'Reports']:
+					print("		- Getting Attachement Links")
+					get_attachment_links(driver, session, tab_name, charge, Attachment)
 
 				# Set up the download directory for the current tab. Subdirectory name mimics tab name
 				tab_directory = os.path.join(downloads_dir, tab_name.replace('/', '_'))
@@ -310,7 +316,7 @@ def export_related_csvs(driver, charge, retries=2):
 						export_button = wait_for_element(
 							driver,
 							By.XPATH,
-							f'/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index + 1}]/tab-data-tables/div/div[1]/data-table/div[2]/div[2]/div/div/a[3]',
+							f'/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{index + 1}]/tab-data-tables/div/div[2]/data-table/div[2]/div[2]/div/div/a[3]',
 							EC.element_to_be_clickable,
 							timeout=5
 						)
@@ -352,6 +358,83 @@ def export_related_csvs(driver, charge, retries=2):
 		print(f"Error initiating export for charge '{charge}': {general_error}")
 		# Return False if the process fails and does not run through all the tabs
 		return False
+
+
+def get_attachment_links(driver, session, tab, charge, Attachment):
+	table_path = ''
+	if tab == 'Docs & Pics':
+		table_path = '/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[3]/tab-data-tables/div/div[2]/data-table/div[4]/table'
+	elif tab == 'Reports':
+		table_path = '/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[4]/tab-data-tables/div/div[2]/data-table/div[4]/table'
+
+	try:
+		table = wait_for_element(driver, By.XPATH, table_path, timeout=10)
+	except Exception:
+		print(f"		- table not found in {tab}")
+		return
+
+	table_rows = table.find_elements(By.TAG_NAME, 'tbody')
+	for i, row in enumerate(table_rows):
+		if row == table_rows[-1]:
+			break
+		link_tag = row.find_element(By.XPATH, f'/html/body/router-view/main-layout/div/main/div/div[2]/tab-container/div/div[2]/div/div/div/div[{4 if tab == "Reports" else 3}]/tab-data-tables/div/div[2]/data-table/div[4]/table/tbody[{i+1}]/tr/td[2]/data-table-cell/a')
+		file_link = link_tag.get_attribute('href')
+		file_name = link_tag.find_element(By.TAG_NAME, 'span').text.strip()
+
+		existing_attachment = session.query(Attachment).filter_by(filename=file_name, charge_number=charge).first()
+		if not existing_attachment:
+			new_attachent = Attachment(
+				filename=file_name,
+				link=file_link,
+				downloaded=False,
+				charge_number=charge
+			)
+			session.add(new_attachent)
+			session.commit()
+			print(f"		- Attachment added: {new_attachent}")
+		else:
+			print(f"		- Attachment already exists: {existing_attachment}")
+
+
+# scrape the attachment data within the attachment tab
+def scrape_attachments(driver, download_path, link, filename):
+	print(f"\nNavigating to Attachment {filename}")
+	driver.get(link)
+	time.sleep(0.5)
+	driver.refresh()
+	# wait until URL contains the param before continuing
+	WebDriverWait(driver, 10).until(EC.url_contains(link))
+	time.sleep(1)
+
+	try:
+		if filename.endswith('.pdf'):
+			pdf_viewer = wait_for_element(driver, By.TAG_NAME, 'iframe', timeout=10)
+			file_url = pdf_viewer.get_attribute('src')
+		else:
+			img_element = wait_for_element(driver, By.TAG_NAME, 'img', timeout=10)
+			file_url = img_element.get_attribute('src')
+	except Exception as e:
+		print(f"Failed to locate image or document: {e}")
+		return False
+
+	if file_url:
+		header, encoded_data = file_url.split(',', 1)  # extract base64 data
+		image_data = base64.b64decode(encoded_data)  # decode base64 to binary
+
+		if not os.path.exists(download_path):
+			os.makedirs(download_path)
+
+		file_name = os.path.join(download_path, filename)  # create file path
+
+		try:
+			with open(file_name, 'wb') as file:
+				file.write(image_data)  # create file
+			print(f"Downloaded attachment to {file_name}")
+			return file_name  # return the file path
+		except Exception as e:
+			print(f"Error occurred while trying to save file: {e}")
+			return False
+
 
 
 # combine CSVs file in each subdirectory within 'downloads' into one CSV for each tab and store them in 'combined_files'

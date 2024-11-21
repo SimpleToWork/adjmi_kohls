@@ -5,8 +5,8 @@ currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
-from data_recruit.csv_scraper import scrape_charge_data, setup_driver, login
-from data_import.models import Charge
+from data_recruitment.csv_scraper import scrape_charge_data, setup_driver, login
+from data_import.models import Charge, Attachment
 from data_import.main import setup_database
 
 
@@ -32,7 +32,7 @@ def get_related_data_process(session, driver):
 		for index, charge in enumerate(charges):
 			print(f"\n[{index+1}/{len(charges)}] Scraping data for Charge {charge.id}...")
 			# Navigate to and scrape all data related to Charge instance. Returns True if scrape process successfully finishes tab process
-			successful_pull = scrape_charge_data(driver, charge.id)
+			successful_pull = scrape_charge_data(driver, session, charge.id, Attachment)
 			if successful_pull:
 				print(f"Data scraped, marking Charge {charge.id} pulled...")
 				# Only mark the Charge as pulled if the scraping process was successful
@@ -64,7 +64,7 @@ if __name__ == '__main__':
 		print(f"\n{len(charges)} Charges to Scrape")
 		for index, charge in enumerate(charges):
 			print(f"\n[{index+1}/{len(charges)}] Scraping data for Charge {charge.id}...")
-			successful_pull = scrape_charge_data(driver, charge.id)
+			successful_pull = scrape_charge_data(driver, session, charge.id, Attachment)
 			if successful_pull:
 				print(f"Data scraped, marking Charge {charge.id} pulled...")
 				charge.pulled = True

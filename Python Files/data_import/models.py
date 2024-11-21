@@ -67,6 +67,7 @@ class Charge(Base):
 	routing_requests_1 = relationship("RoutingRequest1", back_populates="charge")
 	routing_requests_2 = relationship("RoutingRequest2", back_populates="charge")
 	disputes = relationship("Dispute", back_populates="charge")
+	attachments = relationship("Attachment", back_populates='charge')
 
 	def __repr__(self):
 		return f"<Charge(id={self.id}, pulled={self.pulled}, imported={self.imported})>"
@@ -126,6 +127,8 @@ class Document(Base):
 	charge_number = Column(Integer, ForeignKey('charge.id'))
 
 	charge = relationship("Charge", back_populates="documents")
+
+	attachments = relationship("Attachment", back_populates="document")
 
 
 class Email(Base):
@@ -194,6 +197,8 @@ class Report(Base):
 	charge_number = Column(Integer, ForeignKey('charge.id'))
 
 	charge = relationship("Charge", back_populates='reports')
+
+	attachments = relationship("Attachment", back_populates="report")
 
 
 class RoutingRequest1(Base):
@@ -309,3 +314,23 @@ class Dispute(Base):
 	charge_number = Column(Integer, ForeignKey('charge.id'))
 
 	charge = relationship("Charge", back_populates='disputes')
+
+
+class Attachment(Base):
+	__tablename__ = 'attachment'
+
+	id = Column(Integer, primary_key=True, autoincrement=True)
+	filename = Column(String(220), nullable=False)
+	link = Column(String(500), nullable=False)
+	downloaded = Column(Boolean, default=False, nullable=False)
+	file_path = Column(String(500), nullable=True)
+	charge_number = Column(Integer, ForeignKey('charge.id'))
+	document_id = Column(Integer, ForeignKey('document.id'))
+	report_id = Column(Integer, ForeignKey('report.id'))
+
+	charge = relationship("Charge", back_populates='attachments')
+	document = relationship("Document", back_populates='attachments')
+	report = relationship("Report", back_populates='attachments')
+
+	def __repr__(self):
+		return f"<Attachment(filename={self.filename}, downloaded={self.downloaded})>"

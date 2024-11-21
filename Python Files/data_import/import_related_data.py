@@ -11,7 +11,7 @@ from data_import.models import (
 )
 
 from data_import.main import normalize_column_name, convert_to_datetime, setup_database, model_map, date_fields
-from data_recruit.csv_scraper import downloads_dir
+from data_recruitment.csv_scraper import downloads_dir
 
 
 # Get all Charges that were pulled and need to be imported
